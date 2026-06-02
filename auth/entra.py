@@ -1,8 +1,8 @@
 """
-Azure Entra (Azure AD) 认证模块 - 基于 MSAL 的 OAuth2 授权码流程
+Azure Entra (Azure AD) 認證模組 - 基於 MSAL 的 OAuth2 授權碼流程
 
-生产模式: 使用真实 MSAL 认证
-演示模式: 返回模拟用户数据，无需真实 Azure AD 配置
+生產模式: 使用真實 MSAL 認證
+示範模式: 回傳模擬用戶資料，無需真實 Azure AD 設定
 """
 import secrets
 import requests
@@ -12,44 +12,44 @@ import msal
 from config.settings import settings
 from auth.roles import get_role_from_groups
 
-# MS Graph API 端点
+# MS Graph API 端點
 GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 
-# 演示模式下的模拟用户数据
+# 示範模式下的模擬用戶資料
 DEMO_USERS: dict[str, dict] = {
     "admin": {
         "id": "demo-admin-001",
-        "displayName": "张管理员 (Demo Admin)",
+        "displayName": "張管理員 (Demo Admin)",
         "mail": "admin@demo.local",
         "userPrincipalName": "admin@demo.local",
-        "jobTitle": "系统管理员",
-        "department": "IT部门",
-        "groups": [],           # 演示模式下角色直接指定，不走群组映射
+        "jobTitle": "系統管理員",
+        "department": "IT部門",
+        "groups": [],           # 示範模式下角色直接指定，不走群組對應
         "_demo_role": "admin",
     },
     "manager": {
         "id": "demo-manager-001",
-        "displayName": "李经理 (Demo Manager)",
+        "displayName": "李經理 (Demo Manager)",
         "mail": "manager@demo.local",
         "userPrincipalName": "manager@demo.local",
-        "jobTitle": "部门经理",
-        "department": "销售部",
+        "jobTitle": "部門經理",
+        "department": "銷售部",
         "groups": [],
         "_demo_role": "manager",
     },
     "user": {
         "id": "demo-user-001",
-        "displayName": "王用户 (Demo User)",
+        "displayName": "王用戶 (Demo User)",
         "mail": "user@demo.local",
         "userPrincipalName": "user@demo.local",
-        "jobTitle": "业务专员",
-        "department": "运营部",
+        "jobTitle": "業務專員",
+        "department": "運營部",
         "groups": [],
         "_demo_role": "user",
     },
     "guest": {
         "id": "demo-guest-001",
-        "displayName": "访客 (Demo Guest)",
+        "displayName": "訪客 (Demo Guest)",
         "mail": "guest@demo.local",
         "userPrincipalName": "guest@demo.local",
         "jobTitle": "",
@@ -61,7 +61,7 @@ DEMO_USERS: dict[str, dict] = {
 
 
 def _build_msal_app() -> msal.ConfidentialClientApplication:
-    """构建 MSAL 机密客户端应用实例"""
+    """建立 MSAL 機密用戶端應用程式實例"""
     return msal.ConfidentialClientApplication(
         client_id=settings.AZURE_CLIENT_ID,
         client_credential=settings.AZURE_CLIENT_SECRET,
@@ -71,16 +71,16 @@ def _build_msal_app() -> msal.ConfidentialClientApplication:
 
 def get_auth_url(state: Optional[str] = None) -> tuple[str, str]:
     """
-    构建 Azure AD OAuth2 授权 URL
+    建立 Azure AD OAuth2 授權 URL
 
     Args:
-        state: CSRF 保护状态参数（若为 None 则自动生成）
+        state: CSRF 保護狀態參數（若為 None 則自動產生）
 
     Returns:
-        (auth_url, state) 元组
+        (auth_url, state) 元組
     """
     if settings.is_demo_mode():
-        # 演示模式：返回占位符 URL（实际上不会跳转）
+        # 示範模式：回傳占位符 URL（實際上不會跳轉）
         state = state or secrets.token_urlsafe(16)
         return ("#demo-mode", state)
 
@@ -96,17 +96,17 @@ def get_auth_url(state: Optional[str] = None) -> tuple[str, str]:
 
 def get_token_from_code(code: str, state: str) -> dict:
     """
-    用授权码换取访问令牌
+    用授權碼換取存取權杖
 
     Args:
-        code:  OAuth2 授权码（来自回调 URL 参数 ?code=...）
-        state: 状态参数（用于 CSRF 验证）
+        code:  OAuth2 授權碼（來自回呼 URL 參數 ?code=...）
+        state: 狀態參數（用於 CSRF 驗證）
 
     Returns:
-        包含 access_token 的令牌字典
+        包含 access_token 的權杖字典
 
     Raises:
-        ValueError: 令牌交换失败
+        ValueError: 權杖交換失敗
     """
     if settings.is_demo_mode():
         return {"access_token": "demo-token", "token_type": "Bearer"}
@@ -119,36 +119,36 @@ def get_token_from_code(code: str, state: str) -> dict:
     )
     if "error" in result:
         raise ValueError(
-            f"令牌获取失败: {result.get('error')} - {result.get('error_description')}"
+            f"權杖取得失敗: {result.get('error')} - {result.get('error_description')}"
         )
     return result
 
 
 def get_user_info(access_token: str) -> dict:
     """
-    调用 MS Graph API 获取用户信息和所属群组
+    呼叫 MS Graph API 取得用戶資訊和所屬群組
 
     Args:
-        access_token: 有效的访问令牌
+        access_token: 有效的存取權杖
 
     Returns:
-        用户信息字典（包含 groups 列表和 _role 字段）
+        用戶資訊字典（包含 groups 清單和 _role 欄位）
 
     Raises:
-        requests.HTTPError: API 调用失败
+        requests.HTTPError: API 呼叫失敗
     """
     if settings.is_demo_mode():
-        # 演示模式：返回空占位符（实际角色由 session 直接设置）
+        # 示範模式：回傳空占位符（實際角色由 session 直接設定）
         return DEMO_USERS["guest"].copy()
 
     headers = {"Authorization": f"Bearer {access_token}"}
 
-    # 获取基本用户信息
+    # 取得基本用戶資訊
     me_resp = requests.get(f"{GRAPH_BASE}/me", headers=headers, timeout=10)
     me_resp.raise_for_status()
     user_info = me_resp.json()
 
-    # 获取用户所属群组 ID
+    # 取得用戶所屬群組 ID
     groups_resp = requests.get(
         f"{GRAPH_BASE}/me/memberOf?$select=id",
         headers=headers,
@@ -165,12 +165,12 @@ def get_user_info(access_token: str) -> dict:
 
 def get_demo_user(role: str) -> dict:
     """
-    演示模式：根据角色获取模拟用户信息
+    示範模式：依角色取得模擬用戶資訊
 
     Args:
-        role: 目标角色（admin/manager/user/guest）
+        role: 目標角色（admin/manager/user/guest）
 
     Returns:
-        模拟用户信息字典
+        模擬用戶資訊字典
     """
     return DEMO_USERS.get(role, DEMO_USERS["guest"]).copy()

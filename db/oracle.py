@@ -1,8 +1,8 @@
 """
-Oracle 数据库连接模块
+Oracle 資料庫連線模組
 
-使用 oracledb thin 模式（无需 Oracle 客户端库）
-密码通过 Fernet 解密后使用，避免明文存储
+使用 oracledb thin 模式（無需 Oracle 用戶端程式庫）
+密碼透過 Fernet 解密後使用，避免明文儲存
 """
 import oracledb
 from typing import Optional
@@ -13,37 +13,37 @@ from config.crypto import decrypt_password
 
 def get_connection() -> oracledb.Connection:
     """
-    建立 Oracle 数据库连接
+    建立 Oracle 資料庫連線
 
-    密码从加密的环境变量中解密获取，使用 thin 模式连接。
+    密碼從加密的環境變數中解密取得，使用 thin 模式連線。
 
     Returns:
-        oracledb.Connection 连接对象
+        oracledb.Connection 連線物件
 
     Raises:
-        ValueError: 配置缺失（未设置 FERNET_KEY 或加密密码）
-        oracledb.Error: 数据库连接失败
+        ValueError: 設定缺少（未設定 FERNET_KEY 或加密密碼）
+        oracledb.Error: 資料庫連線失敗
     """
     if not settings.FERNET_KEY:
         raise ValueError(
-            "FERNET_KEY 未配置。请运行 `python -m config.crypto` 生成密钥。"
+            "FERNET_KEY 未設定。請執行 `python -m config.crypto` 產生金鑰。"
         )
     if not settings.ORACLE_PASSWORD_ENCRYPTED:
         raise ValueError(
-            "ORACLE_PASSWORD_ENCRYPTED 未配置。"
-            "请运行 `python -m config.crypto encrypt <密码>` 加密数据库密码。"
+            "ORACLE_PASSWORD_ENCRYPTED 未設定。"
+            "請執行 `python -m config.crypto encrypt <密碼>` 加密資料庫密碼。"
         )
 
-    # 解密数据库密码
+    # 解密資料庫密碼
     plain_password = decrypt_password(
         settings.ORACLE_PASSWORD_ENCRYPTED,
         settings.FERNET_KEY,
     )
 
-    # 构建连接字符串（Easy Connect 格式）
+    # 建立連線字串（Easy Connect 格式）
     dsn = f"{settings.ORACLE_HOST}:{settings.ORACLE_PORT}/{settings.ORACLE_SERVICE}"
 
-    # 使用 thin 模式（不依赖 Oracle 客户端）
+    # 使用 thin 模式（不依賴 Oracle 用戶端）
     connection = oracledb.connect(
         user=settings.ORACLE_USER,
         password=plain_password,
@@ -54,12 +54,12 @@ def get_connection() -> oracledb.Connection:
 
 def test_connection() -> tuple[bool, str]:
     """
-    测试数据库连接是否正常
+    測試資料庫連線是否正常
 
-    执行 SELECT 1 FROM DUAL 验证连通性。
+    執行 SELECT 1 FROM DUAL 驗證連線狀態。
 
     Returns:
-        (success: bool, message: str) 元组
+        (success: bool, message: str) 元組
     """
     try:
         conn = get_connection()
@@ -69,30 +69,30 @@ def test_connection() -> tuple[bool, str]:
         cursor.close()
         conn.close()
         if row and row[0] == 1:
-            return (True, f"连接成功！Oracle @ {settings.ORACLE_HOST}:{settings.ORACLE_PORT}/{settings.ORACLE_SERVICE}")
-        return (False, "查询返回异常结果")
+            return (True, f"連線成功！Oracle @ {settings.ORACLE_HOST}:{settings.ORACLE_PORT}/{settings.ORACLE_SERVICE}")
+        return (False, "查詢回傳異常結果")
     except ValueError as e:
-        return (False, f"配置错误: {e}")
+        return (False, f"設定錯誤: {e}")
     except oracledb.Error as e:
         error_obj, = e.args
-        return (False, f"Oracle 错误 [{error_obj.code}]: {error_obj.message}")
+        return (False, f"Oracle 錯誤 [{error_obj.code}]: {error_obj.message}")
     except Exception as e:
-        return (False, f"未知错误: {e}")
+        return (False, f"未知錯誤: {e}")
 
 
 def execute_query(sql: str, params: Optional[dict] = None) -> tuple[list[str], list[tuple]]:
     """
-    执行查询并返回列名和数据行
+    執行查詢並回傳欄位名稱和資料列
 
     Args:
-        sql:    SQL 查询语句（使用 :param_name 占位符）
-        params: 查询参数字典（可选）
+        sql:    SQL 查詢語句（使用 :param_name 占位符）
+        params: 查詢參數字典（可選）
 
     Returns:
-        (columns, rows) 元组
+        (columns, rows) 元組
 
     Raises:
-        同 get_connection() 的异常
+        同 get_connection() 的例外
     """
     conn = get_connection()
     try:
