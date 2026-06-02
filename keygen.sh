@@ -4,15 +4,13 @@
 #   bash keygen.sh              # 產生新的 Fernet 金鑰
 #   bash keygen.sh encrypt      # 加密資料庫密碼（互動式）
 #   bash keygen.sh decrypt      # 解密確認（互動式）
+#
+# 註: FERNET_KEY 由 python-dotenv 自 .env 自動載入，毋需手動 export。
 
 set -e
+cd "$(dirname "$0")"
 
 ACTION="${1:-keygen}"
-
-# 讀取 .env（若存在）
-if [ -f ".env" ]; then
-    export $(grep -v '^#' .env | grep -v '^$' | xargs)
-fi
 
 case "$ACTION" in
     keygen)
@@ -28,13 +26,10 @@ case "$ACTION" in
         echo "========================================"
         echo " 資料庫密碼加密工具"
         echo "========================================"
-        if [ -z "$FERNET_KEY" ]; then
-            echo "[錯誤] 未找到 FERNET_KEY，請先設定 .env 或執行: bash keygen.sh"
-            exit 1
-        fi
+        # 隱藏輸入並以 stdin 傳入，避免密碼出現在 process 清單
         read -rsp "請輸入要加密的資料庫密碼: " DB_PASS
         echo ""
-        ENCRYPTED=$(python -m config.crypto encrypt "$DB_PASS")
+        ENCRYPTED=$(printf '%s' "$DB_PASS" | python -m config.crypto encrypt)
         echo ""
         echo "[結果] 加密後密文:"
         echo "  ORACLE_PASSWORD_ENCRYPTED=${ENCRYPTED}"
@@ -46,12 +41,8 @@ case "$ACTION" in
         echo "========================================"
         echo " 密文解密確認工具"
         echo "========================================"
-        if [ -z "$FERNET_KEY" ]; then
-            echo "[錯誤] 未找到 FERNET_KEY，請先設定 .env"
-            exit 1
-        fi
         read -rp "請輸入要解密的密文: " CIPHER
-        PLAIN=$(python -m config.crypto decrypt "$CIPHER")
+        PLAIN=$(printf '%s' "$CIPHER" | python -m config.crypto decrypt)
         echo ""
         echo "[結果] 解密後明文: ${PLAIN}"
         ;;

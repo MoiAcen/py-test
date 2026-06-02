@@ -49,7 +49,7 @@ py-test/
 │   └── oracle.py           # Oracle 資料庫連線與查詢
 ├── utils/
 │   └── session.py          # Streamlit Session State 管理
-└── pages/
+└── views/                  # 角色頁面（避免與 Streamlit 內建 pages/ 多頁機制衝突）
     ├── admin.py            # 管理員控制台
     ├── manager.py          # 經理儀表板
     ├── user.py             # 個人儀表板

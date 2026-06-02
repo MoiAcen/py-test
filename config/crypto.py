@@ -7,7 +7,6 @@ CLI 用法:
     python -m config.crypto encrypt <明文>      # 加密字串
     python -m config.crypto decrypt <密文>      # 解密字串（需要設定 FERNET_KEY 環境變數）
 """
-import base64
 import sys
 from cryptography.fernet import Fernet
 
@@ -52,8 +51,35 @@ def decrypt_password(encrypted: str, key: str) -> str:
     return decrypted_bytes.decode("utf-8")
 
 
+def _load_key() -> str:
+    """從 .env / 環境變數載入 FERNET_KEY，缺少時結束程式"""
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    key = os.getenv("FERNET_KEY", "")
+    if not key:
+        # 提示訊息輸出至 stderr，保持 stdout 乾淨（供腳本擷取）
+        print("錯誤: 請先設定環境變數 FERNET_KEY", file=sys.stderr)
+        sys.exit(1)
+    return key
+
+
+def _read_value(args: list[str], prompt_label: str) -> str:
+    """取得待處理字串：優先用 argv，否則自 stdin 讀取（避免敏感值出現在 process 清單）"""
+    if len(args) >= 2:
+        return args[1]
+    # 從 stdin 讀取（可由腳本以 pipe 傳入隱藏輸入）
+    print(f"請輸入{prompt_label}（由 stdin 讀取）:", file=sys.stderr)
+    return sys.stdin.readline().rstrip("\n")
+
+
 def _cli_main() -> None:
-    """命令列入口"""
+    """
+    命令列入口
+
+    設計原則：encrypt/decrypt 的結果以「純文字」輸出至 stdout，
+    所有提示訊息輸出至 stderr，方便 shell 腳本直接擷取結果。
+    """
     args = sys.argv[1:]
 
     if not args:
@@ -74,35 +100,22 @@ def _cli_main() -> None:
 
     command = args[0].lower()
 
-    if command == "encrypt" and len(args) >= 2:
-        import os
-        from dotenv import load_dotenv
-        load_dotenv()
-        key = os.getenv("FERNET_KEY", "")
-        if not key:
-            print("錯誤: 請先設定環境變數 FERNET_KEY")
-            sys.exit(1)
-        plain = args[1]
-        result = encrypt_password(plain, key)
-        print(f"加密結果: {result}")
+    if command == "encrypt":
+        key = _load_key()
+        plain = _read_value(args, "要加密的明文")
+        print(encrypt_password(plain, key))
 
-    elif command == "decrypt" and len(args) >= 2:
-        import os
-        from dotenv import load_dotenv
-        load_dotenv()
-        key = os.getenv("FERNET_KEY", "")
-        if not key:
-            print("錯誤: 請先設定環境變數 FERNET_KEY")
-            sys.exit(1)
-        encrypted = args[1]
-        result = decrypt_password(encrypted, key)
-        print(f"解密結果: {result}")
+    elif command == "decrypt":
+        key = _load_key()
+        encrypted = _read_value(args, "要解密的密文")
+        print(decrypt_password(encrypted, key))
 
     else:
-        print("用法:")
-        print("  python -m config.crypto                    # 產生新金鑰")
-        print("  python -m config.crypto encrypt <明文>      # 加密")
-        print("  python -m config.crypto decrypt <密文>      # 解密")
+        print("用法:", file=sys.stderr)
+        print("  python -m config.crypto                    # 產生新金鑰", file=sys.stderr)
+        print("  python -m config.crypto encrypt <明文>      # 加密（亦可由 stdin 傳入）", file=sys.stderr)
+        print("  python -m config.crypto decrypt <密文>      # 解密（亦可由 stdin 傳入）", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

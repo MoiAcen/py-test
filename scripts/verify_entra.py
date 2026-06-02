@@ -19,8 +19,6 @@ from config.settings import settings
 
 # OAuth2 本機回呼用
 CALLBACK_PORT = 8502
-CALLBACK_PATH = "/callback"
-_auth_code: dict = {}
 
 
 def check_config() -> list[str]:
@@ -105,32 +103,44 @@ def verify_interactive_login() -> tuple[bool, str]:
         # 啟動本機 HTTP server 接收回呼
         received = {}
 
+        done = threading.Event()
+
         class CallbackHandler(http.server.BaseHTTPRequestHandler):
             def do_GET(self):
                 parsed = urllib.parse.urlparse(self.path)
                 params = dict(urllib.parse.parse_qsl(parsed.query))
-                received.update(params)
-                self.send_response(200)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(
-                    "<html><body><h2>✓ 登入成功，請關閉此視窗並返回終端機。</h2></body></html>".encode()
-                )
+                # 忽略 favicon 等無關請求，僅在收到 OAuth 回呼時記錄並結束
+                if "code" in params or "error" in params:
+                    received.update(params)
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(
+                        "<html><body><h2>✓ 登入完成，請關閉此視窗並返回終端機。</h2></body></html>".encode()
+                    )
+                    done.set()
+                else:
+                    self.send_response(204)
+                    self.end_headers()
 
             def log_message(self, *args):
                 pass  # 靜默 server log
 
         server = http.server.HTTPServer(("localhost", CALLBACK_PORT), CallbackHandler)
-        thread = threading.Thread(target=server.handle_request)
+        # 持續處理請求直到收到 OAuth 回呼（避免 favicon 等請求佔用單一請求槽）
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
 
         print(f"\n  → 正在開啟瀏覽器，請完成 Azure AD 登入...")
         print(f"     （若瀏覽器未自動開啟，請手動前往以下網址）")
         print(f"     {auth_url[:80]}...")
         webbrowser.open(auth_url)
-        thread.join(timeout=120)
+        got_callback = done.wait(timeout=120)
+        server.shutdown()
 
-        if "code" not in received:
+        if not got_callback or "code" not in received:
+            if received.get("error"):
+                return False, f"授權失敗: {received.get('error_description', received['error'])}"
             return False, "等待逾時（120秒）或使用者取消登入"
         if received.get("state") != state:
             return False, "CSRF state 不符，可能遭受攻擊"

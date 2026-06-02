@@ -30,7 +30,7 @@ from utils.session import (
     set_oauth_state,
     get_oauth_state,
 )
-from pages import admin, manager, user, guest
+from views import admin, manager, user, guest
 
 # 初始化 session state
 init_session()
@@ -48,10 +48,10 @@ def _handle_oauth_callback():
     # 清除 URL 參數，避免重複處理
     st.query_params.clear()
 
-    # CSRF 驗證
+    # CSRF 驗證（fail-closed：缺少 saved_state 或不相符皆拒絕）
     saved_state = get_oauth_state()
-    if saved_state and state != saved_state:
-        st.error("⚠️ 安全驗證失敗（state 不符），請重新登入。")
+    if not saved_state or state != saved_state:
+        st.error("⚠️ 安全驗證失敗（state 不符或遺失），請重新登入。")
         return
 
     try:
@@ -63,7 +63,10 @@ def _handle_oauth_callback():
         st.success(f"✅ 登入成功！歡迎 {user_info.get('displayName', '')}")
         st.rerun()
     except Exception as e:
-        st.error(f"❌ 登入失敗：{e}")
+        # 避免外洩內部例外細節，僅記錄至伺服器日誌
+        import logging
+        logging.getLogger(__name__).exception("OAuth 登入失敗")
+        st.error("❌ 登入失敗，請稍後再試或聯絡系統管理員。")
 
 
 def _render_demo_role_selector():

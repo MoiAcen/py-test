@@ -1,5 +1,4 @@
 #!/bin/bash
-# 完整系統驗證（DB + Entra + 基礎環境）
+# 完整系統驗證（.env 由 python-dotenv 自動載入）
 cd "$(dirname "$0")"
-if [ -f ".env" ]; then export $(grep -v '^#' .env | grep -v '^$' | xargs); fi
 python scripts/verify_all.py

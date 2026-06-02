@@ -33,7 +33,8 @@ class Settings:
     FERNET_KEY: str = os.getenv("FERNET_KEY", "")
 
     # 應用模式: "production" 使用真實 Entra 認證, "demo" 使用模擬登入
-    APP_MODE: str = os.getenv("APP_MODE", "demo").lower()
+    # 安全預設為 production（fail-closed），本機開發需於 .env 明確設定 demo
+    APP_MODE: str = os.getenv("APP_MODE", "production").lower()
 
     @classmethod
     def is_demo_mode(cls) -> bool:

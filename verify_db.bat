@@ -1,12 +1,4 @@
 @echo off
-REM Oracle 資料庫連線驗證
-setlocal enabledelayedexpansion
+REM Oracle 資料庫連線驗證（.env 由 python-dotenv 自動載入）
 cd /d "%~dp0"
-if exist ".env" (
-    for /f "usebackq tokens=1,* delims==" %%A in (".env") do (
-        set "ln=%%A"
-        if not "!ln:~0,1!"=="#" if not "%%A"=="" set "%%A=%%B"
-    )
-)
 python scripts\verify_db.py
-endlocal

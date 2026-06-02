@@ -35,6 +35,10 @@ stages:
               python -c "import streamlit; import msal; import oracledb; import cryptography; print('所有套件匯入成功')"
             displayName: '驗證套件匯入'
 
+          - script: |
+              python -m compileall -q app.py config auth db utils views scripts
+            displayName: '語法檢查（compileall）'
+
   - stage: Deploy
     displayName: '部署'
     dependsOn: Build
