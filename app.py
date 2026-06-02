@@ -62,7 +62,7 @@ def _handle_oauth_callback():
             set_user(user_info, role)
         st.success(f"✅ 登入成功！歡迎 {user_info.get('displayName', '')}")
         st.rerun()
-    except Exception as e:
+    except Exception:
         # 避免外洩內部例外細節，僅記錄至伺服器日誌
         import logging
         logging.getLogger(__name__).exception("OAuth 登入失敗")

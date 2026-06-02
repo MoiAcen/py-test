@@ -33,7 +33,8 @@ echo  資料庫密碼加密工具
 echo ========================================
 set /p DB_PASS=請輸入要加密的資料庫密碼:
 echo.
-for /f "delims=" %%R in ('echo !DB_PASS! ^| python -m config.crypto encrypt') do set ENCRYPTED=%%R
+REM Python CLI 輸出純密文（無前綴），以引數傳入確保不含尾端空白
+for /f "delims=" %%R in ('python -m config.crypto encrypt "!DB_PASS!"') do set ENCRYPTED=%%R
 echo [結果] 加密後密文:
 echo   ORACLE_PASSWORD_ENCRYPTED=!ENCRYPTED!
 echo.
@@ -46,7 +47,7 @@ echo  密文解密確認工具
 echo ========================================
 set /p CIPHER=請輸入要解密的密文:
 echo.
-for /f "delims=" %%R in ('echo !CIPHER! ^| python -m config.crypto decrypt') do set PLAIN=%%R
+for /f "delims=" %%R in ('python -m config.crypto decrypt "!CIPHER!"') do set PLAIN=%%R
 echo [結果] 解密後明文: !PLAIN!
 goto :end
 
