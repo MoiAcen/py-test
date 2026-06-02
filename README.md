@@ -28,9 +28,12 @@ py-test/
 ├── requirements.txt        # Python 相依套件
 ├── startup.sh              # Linux / Azure App Service 啟動腳本
 ├── startup.bat             # Windows 本機啟動腳本
+├── keygen.sh               # Linux 金鑰產生與密碼加密工具
+├── keygen.bat              # Windows 金鑰產生與密碼加密工具
 ├── azure-pipelines.yml     # Azure DevOps CI/CD Pipeline
 ├── .env.example            # 環境變數說明範本
 ├── .env.tokens             # Replace Tokens 部署範本（含 #{VAR}# 占位符）
+├── Vault.md                # Azure Key Vault 金鑰管理改進建議
 ├── config/
 │   ├── settings.py         # 集中管理所有設定項
 │   └── crypto.py           # Fernet 加密解密工具（含 CLI）
@@ -179,7 +182,25 @@ streamlit run app.py
 
 ## 密碼加密說明
 
-使用 `config.crypto` CLI 工具管理 Fernet 加密：
+使用 `keygen` 腳本或 `config.crypto` CLI 管理 Fernet 加密：
+
+**Linux / macOS：**
+
+```bash
+bash keygen.sh              # 產生新的 Fernet 金鑰
+bash keygen.sh encrypt      # 互動式加密資料庫密碼
+bash keygen.sh decrypt      # 解密確認
+```
+
+**Windows：**
+
+```bat
+keygen.bat                  REM 產生新的 Fernet 金鑰
+keygen.bat encrypt          REM 互動式加密資料庫密碼
+keygen.bat decrypt          REM 解密確認
+```
+
+**直接使用 CLI（跨平台）：**
 
 ```bash
 # 產生新的 Fernet 金鑰（首次設定時執行）
@@ -188,8 +209,10 @@ python -m config.crypto
 # 加密資料庫密碼（需先設定 FERNET_KEY 環境變數）
 python -m config.crypto encrypt <明文密碼>
 
-# 解密確認（需先設定 FERNET_KEY 環境變數）
+# 解密確認
 python -m config.crypto decrypt <密文>
 ```
 
 將輸出的 `FERNET_KEY` 與 `ORACLE_PASSWORD_ENCRYPTED` 填入 `.env` 檔案。**請勿將 `.env` 提交至版本控制。**
+
+> 關於金鑰管理的安全改進建議（Azure Key Vault），請參閱 [Vault.md](./Vault.md)。
