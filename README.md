@@ -26,14 +26,19 @@
 py-test/
 ├── app.py                  # Streamlit 主入口
 ├── requirements.txt        # Python 相依套件
-├── startup.sh              # Linux / Azure App Service 啟動腳本
-├── startup.bat             # Windows 本機啟動腳本
-├── keygen.sh               # Linux 金鑰產生與密碼加密工具
-├── keygen.bat              # Windows 金鑰產生與密碼加密工具
+├── startup.sh / startup.bat        # 啟動腳本（Linux / Windows）
+├── keygen.sh / keygen.bat          # 金鑰產生與密碼加密工具
+├── verify_db.sh / verify_db.bat    # Oracle 資料庫連線驗證
+├── verify_entra.sh / verify_entra.bat  # Azure Entra ID 登入驗證
+├── verify_all.sh / verify_all.bat  # 完整系統驗證
 ├── azure-pipelines.yml     # Azure DevOps CI/CD Pipeline
 ├── .env.example            # 環境變數說明範本
 ├── .env.tokens             # Replace Tokens 部署範本（含 #{VAR}# 占位符）
 ├── Vault.md                # Azure Key Vault 金鑰管理改進建議
+├── scripts/
+│   ├── verify_db.py        # DB 驗證邏輯
+│   ├── verify_entra.py     # Entra 驗證邏輯
+│   └── verify_all.py       # 完整驗證邏輯
 ├── config/
 │   ├── settings.py         # 集中管理所有設定項
 │   └── crypto.py           # Fernet 加密解密工具（含 CLI）
@@ -49,6 +54,28 @@ py-test/
     ├── manager.py          # 經理儀表板
     ├── user.py             # 個人儀表板
     └── guest.py            # 訪客首頁
+```
+
+---
+
+## 驗證工具
+
+| 腳本 | 功能 | 驗證項目 |
+|------|------|---------|
+| `verify_db.sh` / `verify_db.bat` | Oracle DB 驗證 | 設定齊全 → 金鑰解密 → 連線測試 → SELECT 查詢 |
+| `verify_entra.sh` / `verify_entra.bat` | Entra ID 驗證 | 套件 → Authority 端點 → Client Credentials → 互動式登入（選用） |
+| `verify_all.sh` / `verify_all.bat` | 完整系統驗證 | 環境 + 套件 + 金鑰 + DB + Entra 全部整合 |
+
+```bash
+# Linux
+bash verify_db.sh       # 僅驗證資料庫
+bash verify_entra.sh    # 僅驗證 Entra 登入
+bash verify_all.sh      # 完整驗證
+
+# Windows
+verify_db.bat
+verify_entra.bat
+verify_all.bat
 ```
 
 ---
