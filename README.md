@@ -26,7 +26,8 @@
 py-test/
 ├── app.py                  # Streamlit 主入口
 ├── requirements.txt        # Python 相依套件
-├── startup.sh              # Azure App Service 啟動腳本
+├── startup.sh              # Linux / Azure App Service 啟動腳本
+├── startup.bat             # Windows 本機啟動腳本
 ├── azure-pipelines.yml     # Azure DevOps CI/CD Pipeline
 ├── .env.example            # 環境變數說明範本
 ├── .env.tokens             # Replace Tokens 部署範本（含 #{VAR}# 占位符）
@@ -74,6 +75,22 @@ cp .env.example .env
 編輯 `.env`，填入 Azure AD 與 Oracle 相關設定。
 
 ### 4. 啟動應用程式
+
+**Linux / macOS：**
+
+```bash
+bash startup.sh
+```
+
+**Windows：**
+
+```bat
+startup.bat
+REM 指定自訂埠號（預設 8501）
+startup.bat 8080
+```
+
+**直接執行（跨平台）：**
 
 ```bash
 streamlit run app.py
@@ -144,7 +161,7 @@ streamlit run app.py
 
 1. 使用 **qetza Replace Tokens** 任務，將 `.env.tokens` 中的 `#{VAR_NAME}#` 占位符替換為 Azure DevOps Pipeline 變數
 2. 將 `.env.tokens` 複製為 `.env`
-3. 部署至 Azure App Service（Linux），啟動指令為 `streamlit run app.py --server.port 8000 --server.address 0.0.0.0`
+3. 部署至 Azure App Service（Linux），啟動指令為 `bash startup.sh` 或 `streamlit run app.py --server.port 8000 --server.address 0.0.0.0`
 
 ### 所需 Pipeline 變數
 
