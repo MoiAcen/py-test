@@ -1,13 +1,13 @@
 """
-访客页面 - 公开信息展示与登录引导
-未登录用户或 guest 角色用户看到此页面
+訪客頁面 - 公開資訊展示與登入引導
+未登入用戶或 guest 角色用戶看到此頁面
 """
 import streamlit as st
 
 
 def render() -> None:
-    """渲染访客页面"""
-    # 欢迎横幅
+    """渲染訪客頁面"""
+    # 歡迎橫幅
     st.markdown(
         """
         <div style="
@@ -17,7 +17,7 @@ def render() -> None:
             text-align: center;
             margin-bottom: 30px;
         ">
-            <h1 style="color: white; margin: 0; font-size: 2.5em;">欢迎使用企业数据平台</h1>
+            <h1 style="color: white; margin: 0; font-size: 2.5em;">歡迎使用企業資料平台</h1>
             <p style="color: rgba(255,255,255,0.85); font-size: 1.1em; margin-top: 10px;">
                 Enterprise Data Platform powered by Azure Entra &amp; Oracle
             </p>
@@ -26,7 +26,7 @@ def render() -> None:
         unsafe_allow_html=True,
     )
 
-    # 功能介绍卡片
+    # 功能介紹卡片
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -39,10 +39,10 @@ def render() -> None:
                 border-radius: 8px;
                 height: 160px;
             ">
-                <h3 style="margin-top:0; color:#667eea;">安全认证</h3>
+                <h3 style="margin-top:0; color:#667eea;">安全認證</h3>
                 <p style="color:#555; font-size:0.9em;">
-                    集成 Azure Entra ID (Azure AD) 单点登录，
-                    企业级身份验证保障数据安全。
+                    整合 Azure Entra ID (Azure AD) 單一登入，
+                    企業級身份驗證保障資料安全。
                 </p>
             </div>
             """,
@@ -61,8 +61,8 @@ def render() -> None:
             ">
                 <h3 style="margin-top:0; color:#764ba2;">角色管控</h3>
                 <p style="color:#555; font-size:0.9em;">
-                    基于角色的访问控制 (RBAC)，
-                    管理员、经理、普通用户权限分级管理。
+                    基於角色的存取控制 (RBAC)，
+                    管理員、經理、普通用戶權限分級管理。
                 </p>
             </div>
             """,
@@ -79,10 +79,10 @@ def render() -> None:
                 border-radius: 8px;
                 height: 160px;
             ">
-                <h3 style="margin-top:0; color:#2ecc71;">加密连接</h3>
+                <h3 style="margin-top:0; color:#2ecc71;">加密連線</h3>
                 <p style="color:#555; font-size:0.9em;">
-                    Oracle 数据库密码使用 Fernet 对称加密存储，
-                    保障数据库凭据安全。
+                    Oracle 資料庫密碼使用 Fernet 對稱加密儲存，
+                    保障資料庫憑證安全。
                 </p>
             </div>
             """,
@@ -91,25 +91,25 @@ def render() -> None:
 
     st.divider()
 
-    # 登录引导
+    # 登入引導
     col_left, col_center, col_right = st.columns([1, 2, 1])
     with col_center:
-        st.markdown("### 请先登录以访问完整功能")
+        st.markdown("### 請先登入以存取完整功能")
         st.info(
-            "点击左侧边栏的 **登录** 按钮，通过 Azure Entra ID 进行身份验证。\n\n"
-            "演示模式下，可在顶部选择角色直接体验各功能页面。",
+            "點擊左側邊欄的 **登入** 按鈕，透過 Azure Entra ID 進行身份驗證。\n\n"
+            "示範模式下，可在頂部選擇角色直接體驗各功能頁面。",
             icon="ℹ️",
         )
 
     st.divider()
 
-    # 系统信息
-    st.subheader("系统信息")
+    # 系統資訊
+    st.subheader("系統資訊")
     info_col1, info_col2 = st.columns(2)
     with info_col1:
         st.markdown(
             """
-            **技术栈**
+            **技術棧**
             - Streamlit >= 1.35
             - MSAL (Microsoft Authentication Library)
             - oracledb (thin mode)
@@ -119,10 +119,10 @@ def render() -> None:
     with info_col2:
         st.markdown(
             """
-            **支持角色**
-            - Admin（管理员）- 全功能访问
-            - Manager（经理）- 数据与团队管理
-            - User（普通用户）- 个人仪表盘
-            - Guest（访客）- 本页面
+            **支援角色**
+            - Admin（管理員）- 全功能存取
+            - Manager（經理）- 資料與團隊管理
+            - User（普通用戶）- 個人儀表板
+            - Guest（訪客）- 本頁面
             """
         )
