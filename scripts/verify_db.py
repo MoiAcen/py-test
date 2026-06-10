@@ -75,8 +75,7 @@ def main():
         print(f"  ⚠  以下設定未完整:")
         for m in missing:
             print(f"     - {m}")
-        if "FERNET_KEY" in [m for m in missing if "FERNET_KEY" in m] or \
-           "ORACLE_PASSWORD_ENCRYPTED" in missing:
+        if "FERNET_KEY" in missing or "ORACLE_PASSWORD_ENCRYPTED" in missing:
             print("\n  請先執行 keygen.bat / keygen.sh 產生金鑰並加密密碼")
             sys.exit(1)
     else:

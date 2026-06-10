@@ -74,8 +74,11 @@ def test_connection() -> tuple[bool, str]:
     except ValueError as e:
         return (False, f"設定錯誤: {e}")
     except oracledb.Error as e:
-        error_obj, = e.args
-        return (False, f"Oracle 錯誤 [{error_obj.code}]: {error_obj.message}")
+        # 防禦性處理：部分 oracledb.Error 的 args 未必恰好一個元素
+        error_obj = e.args[0] if e.args else None
+        if error_obj is not None and hasattr(error_obj, "code"):
+            return (False, f"Oracle 錯誤 [{error_obj.code}]: {error_obj.message}")
+        return (False, f"Oracle 錯誤: {e}")
     except Exception as e:
         return (False, f"未知錯誤: {e}")
 

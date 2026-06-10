@@ -150,6 +150,21 @@ python -m compileall -q app.py config auth db utils views scripts
 - **頁面資料**：`views/` 各頁目前為模擬資料（mock），尚未接上真實 Oracle 查詢。
 - **CI 測試**：Build 階段僅做語法檢查，無單元測試；可加入 `pytest`（注意需 mock Azure/Oracle）。
 
+### Entra 互動式登入驗證的前置設定
+
+`scripts/verify_entra.py` 的互動式登入使用本機回呼 `http://localhost:8502`。
+執行前必須在 Azure AD 應用程式的 **「驗證 → 重新導向 URI」** 中註冊
+`http://localhost:8502`，否則 Azure 會以 `redirect_uri_mismatch` 拒絕登入。
+
+### 範本擴充點標記
+
+本專案為框架範本，程式中以下列標記標示「留給接手者實作」的位置，搜尋即可定位：
+
+- `【範本擴充點】` — placeholder 函式 / 欄位（如 `views/*` 的 `_MOCK_*`、`_mock_*`，日期查詢欄位）
+- `【範本說明】` — 刻意保留的示範行為說明（如 `views/user.py` 的固定模擬資料）
+
+接手時請將這些 placeholder 替換為真實的 `db.oracle.execute_query(...)` 查詢或 Graph API 呼叫。
+
 ---
 
 ## 技術棧版本

@@ -7,11 +7,12 @@ Streamlit Session State 管理模組
 import streamlit as st
 
 # 會話狀態鍵名常數
+# 註：是否為 Demo 模式一律以 settings.is_demo_mode() 為單一真相來源，
+#     不在 session 另存 demo 旗標，避免雙重來源造成混淆。
 _KEY_AUTHENTICATED = "authenticated"
 _KEY_USER_INFO = "user_info"
 _KEY_ROLE = "role"
 _KEY_OAUTH_STATE = "oauth_state"
-_KEY_DEMO_MODE = "demo_mode"
 
 
 def init_session() -> None:
@@ -24,7 +25,6 @@ def init_session() -> None:
         _KEY_USER_INFO: {},
         _KEY_ROLE: "guest",
         _KEY_OAUTH_STATE: None,
-        _KEY_DEMO_MODE: False,
     }
     for key, default_value in defaults.items():
         if key not in st.session_state:

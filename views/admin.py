@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from db.oracle import test_connection
 
-# 模擬用戶資料
+# 模擬用戶資料【範本擴充點】placeholder，接手時請改為從資料庫/Graph API 取得
 _MOCK_USERS = [
     {"ID": "U001", "姓名": "張管理員", "部門": "IT部門", "角色": "admin", "狀態": "✅ 啟用"},
     {"ID": "U002", "姓名": "李經理", "部門": "銷售部", "角色": "manager", "狀態": "✅ 啟用"},

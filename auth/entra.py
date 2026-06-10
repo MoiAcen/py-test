@@ -16,6 +16,9 @@ from auth.roles import get_role_from_groups
 GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 
 # 示範模式下的模擬用戶資料
+# 註：`_demo_role` 欄位與字典 key 相同，刻意保留作為資料結構的自我說明
+#     （讓接手者一眼看出每筆模擬用戶對應的角色）；實際角色由 app.py 明確傳入。
+# 【範本擴充點】可在此調整模擬用戶屬性，或新增更多測試帳號。
 DEMO_USERS: dict[str, dict] = {
     "admin": {
         "id": "demo-admin-001",

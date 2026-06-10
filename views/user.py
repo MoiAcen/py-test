@@ -11,7 +11,12 @@ from utils.session import get_user_info, get_display_name
 
 
 def _mock_personal_data() -> pd.DataFrame:
-    """產生模擬的個人工作資料"""
+    """
+    產生模擬的個人工作資料
+
+    【範本擴充點】這是 placeholder。接手時請改為呼叫
+    db.oracle.execute_query(...) 取得真實資料並回傳 DataFrame。
+    """
     today = datetime.today()
     records = []
     for i in range(10):
@@ -65,11 +70,14 @@ def render() -> None:
     with st.form("query_form"):
         q_col1, q_col2 = st.columns(2)
         with q_col1:
+            # 【擴充點】日期區間欄位。實務上請將 start_date 帶入 DB 查詢條件，
+            # 例如 db.oracle.execute_query 的 WHERE 子句參數。
             start_date = st.date_input(
                 "開始日期",
                 value=datetime.today() - timedelta(days=7),
             )
         with q_col2:
+            # 【擴充點】結束日期，同上。
             end_date = st.date_input("結束日期", value=datetime.today())
 
         status_filter = st.multiselect(
@@ -80,20 +88,24 @@ def render() -> None:
         submitted = st.form_submit_button("查詢", use_container_width=True)
 
     # 顯示查詢結果
-    if submitted or True:  # 預設顯示資料
-        df = _mock_personal_data()
-        if status_filter:
-            df = df[df["狀態"].isin(status_filter)]
+    # 【範本說明】此處固定顯示模擬資料，submitted 與日期區間尚未實際套用查詢。
+    # 接手時請依 submitted 觸發真實查詢，並用 start_date / end_date 過濾。
+    if submitted:
+        st.toast("已送出查詢（範本目前回傳模擬資料）", icon="🔍")
 
-        st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "優先等級": st.column_config.SelectboxColumn(
-                    options=["高", "中", "低"]
-                ),
-                "工時(h)": st.column_config.NumberColumn(format="%.1f h"),
-            },
-        )
-        st.caption(f"共 {len(df)} 筆記錄（示範資料）")
+    df = _mock_personal_data()
+    if status_filter:
+        df = df[df["狀態"].isin(status_filter)]
+
+    st.dataframe(
+        df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "優先等級": st.column_config.SelectboxColumn(
+                options=["高", "中", "低"]
+            ),
+            "工時(h)": st.column_config.NumberColumn(format="%.1f h"),
+        },
+    )
+    st.caption(f"共 {len(df)} 筆記錄（示範資料）")
