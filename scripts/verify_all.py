@@ -5,6 +5,11 @@
 import sys
 import os
 
+# Windows cmd 預設 cp950，強制 UTF-8 輸出避免繁體中文亂碼
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv

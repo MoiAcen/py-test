@@ -5,6 +5,11 @@ Oracle 資料庫連線驗證腳本
 import sys
 import os
 
+# Windows cmd 預設 cp950，強制 UTF-8 輸出避免繁體中文亂碼
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 # 將專案根目錄加入 path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
