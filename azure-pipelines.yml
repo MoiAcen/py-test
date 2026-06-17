@@ -1,0 +1,87 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.11'
+
+stages:
+  - stage: Build
+    displayName: '建置與測試'
+    jobs:
+      - job: BuildJob
+        displayName: '安裝套件'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+            displayName: '設定 Python $(pythonVersion)'
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: '安裝相依套件'
+
+          - script: |
+              python -c "import streamlit; import msal; import oracledb; import cryptography; print('所有套件匯入成功')"
+            displayName: '驗證套件匯入'
+
+          - script: |
+              python -m compileall -q app.py config auth db utils views scripts
+            displayName: '語法檢查（compileall）'
+
+  - stage: Deploy
+    displayName: '部署'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployJob
+        displayName: '部署至 Azure App Service'
+        environment: 'production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: UsePythonVersion@0
+                  inputs:
+                    versionSpec: '$(pythonVersion)'
+                  displayName: '設定 Python'
+
+                - script: |
+                    pip install -r requirements.txt
+                  displayName: '安裝套件'
+
+                - task: qetza.replacetokens.replacetokens-task.replacetokens@6
+                  displayName: '替換環境變數 Token'
+                  inputs:
+                    targetFiles: '.env.tokens'
+                    encoding: 'auto'
+                    tokenPattern: 'default'
+                    writeBOM: false
+                    escapeType: 'none'
+                    actionOnMissing: 'fail'
+                    keepToken: false
+                    actionOnNoFiles: 'fail'
+
+                - script: |
+                    cp .env.tokens .env
+                  displayName: '套用 .env'
+
+                - task: AzureWebApp@1
+                  displayName: '部署至 Azure App Service'
+                  inputs:
+                    azureSubscription: '$(AZURE_SUBSCRIPTION)'
+                    appType: 'webAppLinux'
+                    appName: '$(AZURE_WEBAPP_NAME)'
+                    startUpCommand: 'streamlit run app.py --server.port 8000 --server.address 0.0.0.0'
