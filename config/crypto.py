@@ -70,7 +70,7 @@ def _read_value(args: list[str], prompt_label: str) -> str:
         return args[1]
     # 從 stdin 讀取（可由腳本以 pipe 傳入隱藏輸入）
     print(f"請輸入{prompt_label}（由 stdin 讀取）:", file=sys.stderr)
-    return sys.stdin.readline().rstrip("\n")
+    return sys.stdin.readline().rstrip("\r\n")
 
 
 def _cli_main() -> None:
