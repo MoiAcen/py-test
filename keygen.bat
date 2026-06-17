@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 REM 金鑰產生與密碼加密工具
 REM 用法:
 REM   keygen.bat              產生新的 Fernet 金鑰

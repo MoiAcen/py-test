@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 REM 企業資料平台 - Windows 啟動腳本
 REM 用法: startup.bat [PORT]
 
